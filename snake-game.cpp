@@ -4,6 +4,7 @@
 #include <iostream>
 #include <conio.h>
 #include <wininet.h>
+#include <thread>
 
 // 定义地图的大小
 #define MAP_WIDTH 62
@@ -34,10 +35,16 @@
 using namespace std;
 
 int score = 0;
-int speed = 80;
+int speed = 120;
+int direction = RIGHT;
 
-void drewCell(int x, int y, int color);
-void delCell(int x, int y);
+void drewCell(int x, int y, int color); // 画一个像素
+void delCell(int x, int y); // 删除一个像素
+void up();  //监控上键
+void down();  //监控下键
+void mleft();  //监控左键
+void mright();  //监控右键
+void esc();  //监控esc键
 
 class food
 {
@@ -191,7 +198,7 @@ public:
     }
     void speedDown()
     {
-        if(speed<80)speed += 10;
+        if(speed<120)speed += 10;
     }
     int getSpeed()
     {
@@ -292,7 +299,8 @@ public:
         outtextxy(45*PIXEL_SIZE,15*PIXEL_SIZE,_T("不能撞墙，不能撞自己！"));
         outtextxy(45*PIXEL_SIZE,20*PIXEL_SIZE,_T("用方向键控制蛇的移动方向！"));
         outtextxy(45*PIXEL_SIZE,25*PIXEL_SIZE,_T("F1键加速，F2键减速！"));
-        outtextxy(45*PIXEL_SIZE,30*PIXEL_SIZE,_T("按空格键暂停，按ESC键退出！"));
+        outtextxy(45*PIXEL_SIZE,30*PIXEL_SIZE,_T("按空格键暂停，按BACK键继续！"));
+        outtextxy(45*PIXEL_SIZE,35*PIXEL_SIZE,_T("按ESC键退出！"));
         // 初始化蛇
         snake* head = new snake;
         snake* p = new snake;
@@ -301,7 +309,6 @@ public:
         p->setNext(NULL);
         head->setNext(p);
         food food;
-        int direction = RIGHT;
         do
         {
             food.setX(rand() % 40+ 1);
@@ -312,48 +319,15 @@ public:
         head->move(direction,&food);
         while(true)
         {
-            if(GetAsyncKeyState(VK_UP)&0x8000)
-            {
-                if(direction != DOWN)
-                {
-                    direction = UP;
-                }
-            }
-            if(GetAsyncKeyState(VK_DOWN)&0x8000)
-            {
-                if(direction != UP)
-                {
-                    direction = DOWN;
-                }
-            }
-            if(GetAsyncKeyState(VK_LEFT)&0x8000)
-            {
-                if(direction != RIGHT)
-                {
-                    direction = LEFT;
-                }
-            }
-            if(GetAsyncKeyState(VK_RIGHT)&0x8000)
-            {
-                if(direction != LEFT)
-                {
-                    direction = RIGHT;
-                }
-            }
             if(GetAsyncKeyState(VK_SPACE)&0x8000)
             {
                 while(true)
                 {
-                    if(GetAsyncKeyState(VK_SPACE)&0x8000)
+                    if(GetAsyncKeyState(VK_BACK)&0x8000)
                     {
                         break;
                     }
-                    Sleep(50);
                 }
-            }
-            if(GetAsyncKeyState(VK_ESCAPE)&0x8000)
-            {
-                exit(0);
             }
             if(GetAsyncKeyState(VK_F1)&0x8000)
             {
@@ -425,11 +399,6 @@ public:
                 start();
                 break;
             }
-            if(GetAsyncKeyState(VK_ESCAPE) & 0x8000)
-            {  
-                exit(0);
-                break;
-            }
         }
         
     }
@@ -441,6 +410,11 @@ int main()
 {
     initgraph(MAP_WIDTH * PIXEL_SIZE, MAP_HEIGHT * PIXEL_SIZE);
     map m(MAP_WIDTH, MAP_HEIGHT);
+    thread t1(up);
+    thread t2(down);
+    thread t3(mleft);
+    thread t4(mright);
+    thread t5(esc);
     m.manu();
 
     closegraph();
@@ -458,4 +432,71 @@ void delCell(int x, int y)
 {
     setfillcolor(BLACK);
     clearrectangle(x * PIXEL_SIZE, y * PIXEL_SIZE, (x + 1) * PIXEL_SIZE, (y + 1) * PIXEL_SIZE);
+}
+
+void up()
+{
+    while (true)
+    {
+        if(GetAsyncKeyState(VK_UP)&0x8000)
+        {
+            if(direction != DOWN)
+            {
+                direction = UP;
+            }
+        }
+    }
+}
+
+void down()
+{
+    while(true)
+    {
+        if(GetAsyncKeyState(VK_DOWN)&0x8000)
+        {
+            if(direction != UP)
+            {
+                direction = DOWN;
+            }
+        }
+    }
+}
+
+void mleft()
+{
+    while (true)
+    {
+        if(GetAsyncKeyState(VK_LEFT)&0x8000)
+        {
+            if(direction != RIGHT)
+            {
+                        direction = LEFT;
+            }
+        }
+    }
+}
+
+void mright()
+{
+    while (true)
+    {
+        if(GetAsyncKeyState(VK_RIGHT)&0x8000)
+        {
+            if(direction != LEFT)
+            {
+                direction = RIGHT;
+            }
+        }
+    }
+}
+
+void esc()
+{
+    while (true)
+    {
+        if(GetAsyncKeyState(VK_ESCAPE)&0x8000)
+        {
+            exit(0);
+        }
+    }
 }
